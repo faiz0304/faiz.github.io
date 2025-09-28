@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Resume Builder — MVP</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background:#f7f7fb; padding:20px; }
+    #resume-preview { background:white; padding:24px; width:800px; max-width:100%; margin:auto; box-shadow:0 4px 12px rgba(0,0,0,0.06); border-radius:8px; }
+    .section { margin-bottom:12px; }
+    .name { font-size:22px; font-weight:700; }
+    .title { color:#666; margin-bottom:8px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 class="mb-3">Resume Builder (MVP)</h2>
+
+    <div class="row">
+      <!-- Form -->
+      <div class="col-md-4">
+        <div class="mb-2">
+          <label class="form-label">Full Name</label>
+          <input id="inp-name" class="form-control" placeholder="Faiz Ur Rehman Ashrafi">
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Job Title</label>
+          <input id="inp-title" class="form-control" placeholder="Electronics Student / Junior Developer">
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Summary</label>
+          <textarea id="inp-summary" class="form-control" rows="3" placeholder="One-line professional summary..."></textarea>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Education</label>
+          <textarea id="inp-edu" class="form-control" rows="3" placeholder="B.S. Electronics Engineering, Indus University..."></textarea>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Experience</label>
+          <textarea id="inp-exp" class="form-control" rows="4" placeholder="Project/role descriptions..."></textarea>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Skills (comma separated)</label>
+          <input id="inp-skill" class="form-control" placeholder="Python, Arduino, C++">
+        </div>
+
+        <div class="d-grid gap-2 mt-2">
+          <button id="btn-download" class="btn btn-primary">Download PDF</button>
+          <a id="premium-link" class="btn btn-outline-success" href="#" target="_blank">Premium templates (coming)</a>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="col-md-8">
+        <div id="resume-preview">
+          <div class="name" id="pv-name">Your Name</div>
+          <div class="title" id="pv-title">Job Title</div>
+          <div class="section"><strong>Summary</strong><div id="pv-summary">Short summary...</div></div>
+          <div class="section"><strong>Education</strong><div id="pv-edu">Your education details...</div></div>
+          <div class="section"><strong>Experience</strong><div id="pv-exp">Your experience...</div></div>
+          <div class="section"><strong>Skills</strong><div id="pv-skill">Skill1 • Skill2 • Skill3</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script>
+    // Update preview live
+    const map = [
+      ['inp-name','pv-name'],
+      ['inp-title','pv-title'],
+      ['inp-summary','pv-summary'],
+      ['inp-edu','pv-edu'],
+      ['inp-exp','pv-exp'],
+      ['inp-skill','pv-skill']
+    ];
+    map.forEach(([inp, pv]) => {
+      const e = document.getElementById(inp), p = document.getElementById(pv);
+      e.addEventListener('input', () => {
+        const v = e.value.trim();
+        if (pv === 'pv-skill') p.textContent = v ? v.split(',').map(s=>s.trim()).join(' • ') : 'Skill1 • Skill2 • Skill3';
+        else p.textContent = v || p.getAttribute('data-default') || p.textContent;
+      });
+    });
+
+    // PDF generation
+    document.getElementById('btn-download').addEventListener('click', async () => {
+      const el = document.getElementById('resume-preview');
+      // increase scale for better quality
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL('image/png');
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'pt', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const imgProps = { width: canvas.width, height: canvas.height };
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save('resume.pdf');
+    });
+  </script>
+</body>
+</html>
